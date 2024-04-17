@@ -26,9 +26,9 @@ for i in $(seq 1 $2); do
     PORT=$((BASE_PORT + i))
     BALANCERS="$BALANCERS -b http://127.0.0.1:$PORT"
     CUDA_VISIBLE_DEVICES=$((i-1))
-    echo "Starting server on port $PORT"
-    python -m vllm.entrypoints.openai.api_server --model $1 --dtype bfloat16 --port $PORT &
+    echo "Starting server on port $PORT with CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES"
     PIDS+=($!)
+    CUDA_VISIBLE_DEVICES=$((i-1)) python -m vllm.entrypoints.openai.api_server --model $1 --dtype bfloat16 --port $PORT &
 done
 
 # run load balancer
