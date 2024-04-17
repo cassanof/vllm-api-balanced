@@ -1,3 +1,4 @@
+//go:build pprof
 // +build pprof
 
 // main package code in this file will only be included when pprof build tag is passed.

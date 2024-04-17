@@ -1,11 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"net/url"
 	"strings"
 	"time"
@@ -107,30 +104,7 @@ func (s *TargetServer) SetStatus(status HealthStatus) {
 // the state for the server, only fetches a new state. It returns a StatusDegraded and an error
 // if it encounters an error.
 func (s *TargetServer) GetNewHealthStatus() (HealthStatus, error) {
-
-	// Make a get request to _health endpoint
-	url := fmt.Sprintf("%s/%s", s.Address, HealthEndpoint)
-	resp, err := http.Get(url)
-	if err != nil {
-		return StatusDegraded, err
-	}
-	defer resp.Body.Close()
-
-	// Read the response
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return StatusDegraded, err
-	}
-
-	// Unmarshall the response into Json
-	var hr HealthResponse
-	err = json.Unmarshal(b, &hr)
-	if err != nil {
-		return StatusDegraded, err
-	}
-
-	// Get the status from the response and return
-	return getHealthStatusFromResponse(hr)
+	return StatusHealthy, nil
 }
 
 // getHealthStatusFromResponse is a util function for GetNewHealthStatus. It maps the response

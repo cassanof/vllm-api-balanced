@@ -4,29 +4,28 @@
 // -b: address for backend servers
 //
 // The application has three main components:
-// 1. ServerAddresses []string: It implements the flag.Var interface, and allows
-//    capturing multiple -b flags from the command line
-// 2. TargetServer struct: It represents a target server, with fields to keep track of the health
-//    and functions implemented for checking and updating the health status
-// 3. ServerPool struct: Holds all the (healthy or degraded) backend servers in an array, and allows
-//    picking of healthy server for forwarding the http requests.
+//  1. ServerAddresses []string: It implements the flag.Var interface, and allows
+//     capturing multiple -b flags from the command line
+//  2. TargetServer struct: It represents a target server, with fields to keep track of the health
+//     and functions implemented for checking and updating the health status
+//  3. ServerPool struct: Holds all the (healthy or degraded) backend servers in an array, and allows
+//     picking of healthy server for forwarding the http requests.
 //
 // When you start the application, it does five main things:
-// 1. Parse the command line arguments to get ServerAddresses
-// 2. Create a ServerPool from the ServerAddresses instance, in the process creating a TargetServer
-//    instance for each of the server address
-// 3. Start a goroutine to periodically check the health status of each TargetServer
-// 4. Start a listener webserver on the port specified (or default 8888) that listens for requests and
-//    proxies them to the target servers
+//  1. Parse the command line arguments to get ServerAddresses
+//  2. Create a ServerPool from the ServerAddresses instance, in the process creating a TargetServer
+//     instance for each of the server address
+//  3. Start a goroutine to periodically check the health status of each TargetServer
+//  4. Start a listener webserver on the port specified (or default 8888) that listens for requests and
+//     proxies them to the target servers
 //
 // When you make a http request to the load balancer, the following logic takes place:
-// 1. Listener webserver accepts the request
-// 2. It uses a Round Robin type algorithm to get a healthy target server from the pool. If
-//    no healthy server, return error.
-// 3. Make a request to the healthy target server. If status code is 500, repeat from 1.
-//    To-do: Implement a limit on how many retries on a 500 response.
-// 4. Copy the response from the target server to the resonse for the client http request.
-//
+//  1. Listener webserver accepts the request
+//  2. It uses a Round Robin type algorithm to get a healthy target server from the pool. If
+//     no healthy server, return error.
+//  3. Make a request to the healthy target server. If status code is 500, repeat from 1.
+//     To-do: Implement a limit on how many retries on a 500 response.
+//  4. Copy the response from the target server to the resonse for the client http request.
 //
 // Reverse Proxy: All the incoming requests have their http.Request instance changed
 // and are forwarded to a backend server. The response is copied over into the response for

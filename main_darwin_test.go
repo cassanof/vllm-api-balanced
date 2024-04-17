@@ -1,3 +1,4 @@
+//go:build darwin && !linux
 // +build darwin,!linux
 
 // main package code in this file will only be included in darwin systems
