@@ -8,7 +8,16 @@ fi
 # python -m vllm.entrypoints.openai.api_server --model bigcode/starcoder2-15b --dtype bfloat16 --port 800
 
 PIDS=()
-trap "kill ${PIDS[*]}; exit" INT
+# kill if ctrl+c
+function kill_servers() {
+    echo "Killing servers"
+    for pid in ${PIDS[@]}; do
+        kill -9 $pid
+    done
+    exit 0
+}
+trap kill_servers SIGINT
+
 # string of balancers. e.g. "-b localhost:8000 -b localhost:8001 ..."
 BALANCERS=""
 
