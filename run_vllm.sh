@@ -17,7 +17,7 @@ for i in $(seq 1 $2); do
     PORT=$((BASE_PORT + i))
     BALANCERS="$BALANCERS -b http://127.0.0.1:$PORT"
     echo "Starting server on port $PORT"
-    python -m vllm.entrypoints.openai.api_server --model $2 --dtype bfloat16 --port $PORT &
+    python -m vllm.entrypoints.openai.api_server --model $1 --dtype bfloat16 --port $PORT &
     PIDS+=($!)
 done
 
