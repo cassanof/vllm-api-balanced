@@ -5,8 +5,6 @@ if [ "$#" -ne 2 ]; then
     exit 1
 fi
 
-# python -m vllm.entrypoints.openai.api_server --model bigcode/starcoder2-15b --dtype bfloat16 --port 800
-
 PIDS=()
 # kill if ctrl+c
 function kill_servers() {
@@ -27,7 +25,20 @@ for i in $(seq 1 $2); do
     BALANCERS="$BALANCERS -b http://127.0.0.1:$PORT"
     echo "Starting server on port $PORT"
     PIDS+=($!)
-    CUDA_VISIBLE_DEVICES=$((i-1)) python -m vllm.entrypoints.openai.api_server --model $1 --dtype bfloat16 --port $PORT &
+    if [[ "$1" == /* ]]; then
+        SERVED_MODEL_NAME=$(basename "$1")
+    else
+        SERVED_MODEL_NAME=$1
+    fi
+    CUDA_VISIBLE_DEVICES=$((i-1)) python -m vllm.entrypoints.openai.api_server \
+        --model $1 \
+        --trust-remote-code \
+        --served-model-name $SERVED_MODEL_NAME \
+        --disable-frontend-multiprocessing \
+        --max-model-len 32000 \
+        --enforce-eager \
+        --dtype bfloat16 \
+        --port $PORT &
 done
 
 # run load balancer
