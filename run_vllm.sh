@@ -38,6 +38,8 @@ for i in $(seq 1 $2); do
         --max-model-len 32000 \
         --enforce-eager \
         --dtype bfloat16 \
+        --enable-prefix-caching \
+        --disable-log-requests \
         --port $PORT &
 done
 
