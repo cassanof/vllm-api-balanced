@@ -35,7 +35,7 @@ for i in $(seq 1 $2); do
         --trust-remote-code \
         --served-model-name $SERVED_MODEL_NAME \
         --disable-frontend-multiprocessing \
-        --max-model-len 32000 \
+        --max-model-len 20000 \
         --enforce-eager \
         --dtype bfloat16 \
         --enable-prefix-caching \
