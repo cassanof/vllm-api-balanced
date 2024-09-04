@@ -5,13 +5,9 @@ if [ "$#" -ne 2 ]; then
     exit 1
 fi
 
-PIDS=()
-# kill if ctrl+c
 function kill_servers() {
     echo "Killing servers"
-    for pid in ${PIDS[@]}; do
-        kill -9 $pid
-    done
+    pkill -9 -f "python -m vllm.entrypoints.openai.api_server"
     exit 0
 }
 trap kill_servers SIGINT
@@ -19,28 +15,40 @@ trap kill_servers SIGINT
 # string of balancers. e.g. "-b localhost:8000 -b localhost:8001 ..."
 BALANCERS=""
 
+function spawn_vllm_server() {
+    local gpu_id=$1
+    local model=$2
+    local port=$3
+    local served_model_name=$4
+    while true; do
+        CUDA_VISIBLE_DEVICES=$((gpu_id-1)) python -m vllm.entrypoints.openai.api_server \
+            --model "$model" \
+            --trust-remote-code \
+            --served-model-name "$served_model_name" \
+            --disable-frontend-multiprocessing \
+            --max-model-len 20000 \
+            --enforce-eager \
+            --dtype bfloat16 \
+            --enable-prefix-caching \
+            --disable-log-requests \
+            --port "$port"
+        
+        echo "Server on GPU $gpu_id crashed. Restarting in 5 seconds..."
+        sleep 5
+    done
+}
+
 BASE_PORT=8000
 for i in $(seq 1 $2); do
     PORT=$((BASE_PORT + i))
     BALANCERS="$BALANCERS -b http://127.0.0.1:$PORT"
     echo "Starting server on port $PORT"
-    PIDS+=($!)
     if [[ "$1" == /* ]]; then
         SERVED_MODEL_NAME=$(basename "$1")
     else
         SERVED_MODEL_NAME=$1
     fi
-    CUDA_VISIBLE_DEVICES=$((i-1)) python -m vllm.entrypoints.openai.api_server \
-        --model $1 \
-        --trust-remote-code \
-        --served-model-name $SERVED_MODEL_NAME \
-        --disable-frontend-multiprocessing \
-        --max-model-len 20000 \
-        --enforce-eager \
-        --dtype bfloat16 \
-        --enable-prefix-caching \
-        --disable-log-requests \
-        --port $PORT &
+    spawn_vllm_server "$i" "$1" "$PORT" "$SERVED_MODEL_NAME" &
 done
 
 # run load balancer
