@@ -21,6 +21,8 @@ function spawn_vllm_server() {
     local port=$3
     local served_model_name=$4
     while true; do
+        export ENGINE_ITERATION_TIMEOUT_S=600
+        export VLLM_ENGINE_ITERATION_TIMEOUT_S=600
         CUDA_VISIBLE_DEVICES=$((gpu_id-1)) python -m vllm.entrypoints.openai.api_server \
             --model "$model" \
             --trust-remote-code \
@@ -32,7 +34,7 @@ function spawn_vllm_server() {
             --enable-prefix-caching \
             --disable-log-requests \
             --port "$port"
-        
+
         echo "Server on GPU $gpu_id crashed. Restarting in 5 seconds..."
         sleep 5
     done
