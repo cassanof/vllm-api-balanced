@@ -31,7 +31,6 @@ function spawn_vllm_server() {
             --max-model-len 20000 \
             --enforce-eager \
             --dtype bfloat16 \
-            --enable-prefix-caching \
             --disable-log-requests \
             --port "$port"
 
