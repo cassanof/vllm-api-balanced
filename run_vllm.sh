@@ -8,6 +8,7 @@ fi
 function kill_servers() {
     echo "Killing servers"
     pkill -9 -f "python -m vllm.entrypoints.openai.api_server"
+    pkill -9 -f "run_vllm.sh"
     exit 0
 }
 trap kill_servers SIGINT
