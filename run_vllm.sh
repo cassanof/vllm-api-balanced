@@ -17,6 +17,7 @@ BALANCERS=""
 
 function spawn_vllm_server() {
     local gpu_id=$1
+    echo "gpu id $gpu_id"
     local model=$2
     local port=$3
     local served_model_name=$4
@@ -32,7 +33,7 @@ function spawn_vllm_server() {
             --enforce-eager \
             --dtype bfloat16 \
             --disable-log-requests \
-            --port "$port"
+            --port "$port" 2>&1 | tee /tmp/vllm-$gpu_id.log
 
         echo "Server on GPU $gpu_id crashed. Restarting in 5 seconds..."
         sleep 5
